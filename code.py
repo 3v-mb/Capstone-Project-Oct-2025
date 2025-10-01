@@ -3,7 +3,7 @@ import numpy as np
 import yfinance as yf
 import statsmodels.api as sm
 
-tickers = ["BTC-USD", "ETH-USD", "SOL-USD", "ADA-USD"]
+tickers = ["BTC-USD", "ETH-USD", "DOGE-USD"]
 prices = pd.DataFrame({t: yf.download(t)['Adj Close'] for t in tickers})
 returns = prices.pct_change().dropna()
 
