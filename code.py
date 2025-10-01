@@ -22,7 +22,7 @@ for t1 in tickers:
             res = model.fit(q=alpha)
             coVaR[(t1, t2)] = res.predict([1, VaR[t2]])[0]
 
-# 4. Display CoVaR table
+#Display CoVaR table
 coVaR_df = pd.DataFrame(index=tickers, columns=tickers)
 for (t1, t2), val in coVaR.items():
     coVaR_df.loc[t1, t2] = val
@@ -33,7 +33,7 @@ shock = -0.3
 returns_shock = returns.copy()
 returns_shock['BTC-USD'] += shock
 
-# Recompute CoVaR under shock
+#Recompute CoVaR under shock
 coVaR_shock = {}
 for t1 in tickers:
     for t2 in tickers:
@@ -43,6 +43,3 @@ for t1 in tickers:
             model = sm.QuantReg(y, X)
             res = model.fit(q=alpha)
             coVaR_shock[(t1, t2)] = res.predict([1, VaR[t2]])[0]
-
-print("\nCoVaR under BTC shock:\n", coVaR_shock)
-# -------------------- End --------------------
