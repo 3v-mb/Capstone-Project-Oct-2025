@@ -4,15 +4,15 @@ import yfinance as yf
 import statsmodels.api as sm
 
 tickers = ["BTC-USD", "ETH-USD", "DOGE-USD"]
-prices = pd.DataFrame({t: yf.download(t)['Adj Close'] for t in tickers})
+prices = pd.DataFrame({t: yf.download(t)['Close'] for t in tickers})
 returns = prices.pct_change().dropna()
 
 alpha = 0.05
-VaR = returns.quantile(alpha) #computer VaR
-print("Individual Asset VaR (5%):\n", VaR)
+VaR = returns.quantile(alpha) #calculate VaR
+print("Individual Asset VaR:", VaR)
 
-#Compute CoVaR (conditional VaR using quantile regression)
-coVaR = {}
+#Calculate conditional VaR using quantile regression
+CVaR = {}
 for t1 in tickers:
     for t2 in tickers:
         if t1 != t2:
@@ -20,21 +20,20 @@ for t1 in tickers:
             y = returns[t1]
             model = sm.QuantReg(y, X)
             res = model.fit(q=alpha)
-            coVaR[(t1, t2)] = res.predict([1, VaR[t2]])[0]
+            CVaR[(t1, t2)] = res.predict([1, VaR[t2]])[0]
 
-#Display CoVaR table
-coVaR_df = pd.DataFrame(index=tickers, columns=tickers)
-for (t1, t2), val in coVaR.items():
-    coVaR_df.loc[t1, t2] = val
-print("\nConditional VaR (CoVaR):\n", coVaR_df)
+CVaR_df = pd.DataFrame(index=tickers, columns=tickers)
+for (t1, t2), val in CVaR.items():
+    CVaR_df.loc[t1, t2] = val
+print("Conditional VaR:", CVaR_df)
 
 #Simulate a simple internal shock to BTC (-30%)
 shock = -0.3
 returns_shock = returns.copy()
 returns_shock['BTC-USD'] += shock
 
-#Recompute CoVaR under shock
-coVaR_shock = {}
+#CVaR under shock
+CVaR_shock = {}
 for t1 in tickers:
     for t2 in tickers:
         if t1 != t2:
@@ -42,4 +41,4 @@ for t1 in tickers:
             y = returns_shock[t1]
             model = sm.QuantReg(y, X)
             res = model.fit(q=alpha)
-            coVaR_shock[(t1, t2)] = res.predict([1, VaR[t2]])[0]
+            CVaR_shock[(t1, t2)] = res.predict([1, VaR[t2]])[0]
